@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Multi Account System</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --surface: #ffffff;
+            --background: #f8fafc;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --radius: 8px;
+            --secure: #0288d1;
+            --advanced: #9c27b0;
+            --multi: #7c3aed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: var(--text);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn--success { background: var(--success); }
+        .btn--warning { background: var(--warning); }
+        .btn--error { background: var(--error); }
+        .btn--secure { background: var(--secure); }
+        .btn--advanced { background: var(--advanced); }
+        .btn--multi { background: var(--multi); }
+        .btn--outline { 
+            background: transparent; 
+            border: 1px solid var(--border); 
+            color: var(--text); 
+        }
+        .btn--small {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .account-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .account-card.connected {
+            border-left: 4px solid var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .account-card.disconnected {
+            border-left: 4px solid var(--error);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .account-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .account-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .account-details {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-card.active {
+            border-left: 4px solid var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .filter-card.inactive {
+            border-left: 4px solid var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .user-card {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-card.has-code {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .user-key {
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .user-details {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-badge.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.inactive {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-light);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .multi-banner {
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid var(--multi);
+            color: var(--multi);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+        }
+
+        .multi-banner h4 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .multi-banner ul, .security-banner ul, .info-banner ul {
+            margin-left: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: var(--text-light);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            color: var(--multi);
+            border-bottom-color: var(--multi);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .code-display {
+            background: linear-gradient(135deg, var(--multi), #5b21b6);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .code-value {
+            font-size: 3rem;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .waiting-code {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-light);
+        }
+
+        .waiting-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .loading-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--multi);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none !important; }
+
+        .error-message, .result-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            padding: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--error);
+            margin-top: 1rem;
+        }
+
+        .result-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+
+        .generated-key {
+            font-family: monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.9);
+            color: var(--text);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .user-info-display {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .user-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info-label {
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .user-info-value {
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .code-value {
+                font-size: 2rem;
+            }
+            
+            .user-card, .filter-card, .account-card {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab {
+                flex-shrink: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="screen active">
+        <div class="loading-screen">
+            <div class="spinner"></div>
+            <h2 style="margin-top: 1rem;">🚀 Multi Account System</h2>
+            <p id="loadingMessage">Çoklu hesap sistemi yükleniyor...</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen">
+        <div class="container" style="max-width: 500px;">
+            <div class="card">
+                <h2 style="text-align: center; margin-bottom: 2rem;">🚀 Multi Account System</h2>
+                
+                <div class="multi-banner">
+                    <h4>🚀 Çoklu Hesap Özellikleri:</h4>
+                    <ul>
+                        <li>Çoklu Gmail hesabı desteği</li>
+                        <li>Hesap bazlı email filtreleri</li>
+                        <li>Hesap + filter bazlı key oluşturma</li>
+                        <li>Her hesap için ayrı credentials</li>
+                        <li>Dinamik hesap yönetimi</li>
+                    </ul>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="userKey">Kullanıcı Anahtarı</label>
+                        <input type="text" id="userKey" class="form-control" placeholder="ABC12345" required>
+                        <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">
+                            User: 8 karakter • Admin: Güvenli şifre
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn--multi" style="width: 100%;">
+                        🔐 Giriş Yap
+                    </button>
+                </form>
+                
+                <div id="loginError" class="error-message hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Screen -->
+    <div id="adminLoginScreen" class="screen">
+        <div class="container" style="max-width: 400px;">
+            <div class="card">
+                <h2 style="text-align: center; margin-bottom: 2rem;">🔒 Admin Girişi</h2>
+                
+                <div class="multi-banner">
+                    <h4>🚀 Multi Account Admin</h4>
+                    <p>Çoklu Gmail hesabı yönetim paneli</p>
+                </div>
+                
+                <form id="adminLoginForm">
+                    <div class="form-group">
+                        <label for="adminPassword">Admin Şifresi</label>
+                        <input type="password" id="adminPassword" class="form-control" placeholder="Mevcut admin şifreniz" required>
+                    </div>
+                    <button type="submit" class="btn btn--multi" style="width: 100%;">
+                        🔐 Admin Girişi
+                    </button>
+                </form>
+                
+                <div id="adminLoginError" class="error-message hidden"></div>
+                
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="btn btn--outline" onclick="showScreen('loginScreen')">
+                        👤 Kullanıcı Girişi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Panel -->
+    <div id="userPanel" class="screen">
+        <div class="container">
+            <div class="header">
+                <h1>👤 Kod Paneli</h1>
+                <div class="header-actions">
+                    <button id="checkCodeBtn" class="btn btn--success">🔍 Kodumu Kontrol Et</button>
+                    <button id="userLogout" class="btn btn--outline">🚪 Çıkış</button>
+                </div>
+            </div>
+            
+            <!-- User Info Display -->
+            <div class="user-info-display">
+                <div class="user-info-row">
+                    <span class="user-info-label">Kullanıcı Anahtarı:</span>
+                    <span class="user-info-value" id="currentUserKey"></span>
+                </div>
+                <div class="user-info-row">
+                    <span class="user-info-label">Gmail Hesabı:</span>
+                    <span class="user-info-value" id="currentUserAccount"></span>
+                </div>
+                <div class="user-info-row">
+                    <span class="user-info-label">Email Filter:</span>
+                    <span class="user-info-value" id="currentUserFilter"></span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>💎 Kodunuz</h3>
+                <div id="userCode"></div>
+            </div>
+            
+            <div class="card">
+                <h4>ℹ️ Çoklu Hesap Filter Sistemi</h4>
+                <p>Bu sistem birden fazla Gmail hesabından farklı email provider'ları için ayrı filtreler çalıştırır. Her kullanıcı belirli bir hesap + filter kombinasyonuna atanır.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="screen">
+        <div class="container">
+            <div class="header">
+                <h1>🚀 Multi Account Admin Panel</h1>
+                <div class="header-actions">
+                    <button id="changePasswordBtn" class="btn btn--advanced">🔐 Şifre Değiştir</button>
+                    <button id="connectAllAccountsBtn" class="btn btn--multi">📧 Tüm Hesapları Bağla</button>
+                    <button id="gmailSetupBtn" class="btn btn--outline">📧 Gmail Setup</button>
+                    <button id="adminStartScanBtn" class="btn btn--success">🔄 Taramayı Başlat</button>
+                    <button id="adminStopScanBtn" class="btn btn--warning">⏸️ Taramayı Durdur</button>
+                    <button id="adminLogout" class="btn btn--error">🚪 Güvenli Çıkış</button>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div class="stat-label">Toplam Kullanıcı</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="usersWithCode">-</div>
+                    <div class="stat-label">Kod Almış</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="usersWaiting">-</div>
+                    <div class="stat-label">Bekleyen</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAccounts">-</div>
+                    <div class="stat-label">Gmail Hesapları</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="connectedAccounts">-</div>
+                    <div class="stat-label">Bağlı Hesaplar</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalFilters">-</div>
+                    <div class="stat-label">Email Filtreleri</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="scanningStatus">-</div>
+                    <div class="stat-label">Tarama Durumu</div>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('accounts')">📧 Gmail Hesapları</div>
+                <div class="tab" onclick="switchTab('filters')">🔍 Email Filtreleri</div>
+                <div class="tab" onclick="switchTab('users')">👥 Kullanıcılar</div>
+                <div class="tab" onclick="switchTab('create')">🔑 Key Oluştur</div>
+            </div>
+
+            <!-- Accounts Tab -->
+            <div id="accountsTab" class="tab-content active">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>📧 Gmail Hesapları</h3>
+                        <button id="addAccountBtn" class="btn btn--multi">➕ Hesap Ekle</button>
+                    </div>
+                    <div id="accountsList"></div>
+                </div>
+            </div>
+
+            <!-- Filters Tab -->
+            <div id="filtersTab" class="tab-content">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>🔍 Email Filtreleri</h3>
+                        <button id="addFilterBtn" class="btn btn--advanced">➕ Filter Ekle</button>
+                    </div>
+                    <div id="filtersList"></div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="tab-content">
+                <div class="card">
+                    <h3>👥 Kullanıcılar</h3>
+                    <div id="usersList"></div>
+                </div>
+            </div>
+
+            <!-- Create Key Tab -->
+            <div id="createTab" class="tab-content">
+                <div class="card">
+                    <h3>🔑 Kullanıcı Anahtarı Oluştur</h3>
+                    <p style="margin-bottom: 1rem;">Belirli Gmail hesabı ve email filter için kullanıcı anahtarı oluşturun.</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="createKeyAccount">Gmail Hesabı Seç</label>
+                            <select id="createKeyAccount" class="form-control">
+                                <option value="">Hesap yükleniyor...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="createKeyFilter">Email Filter Seç</label>
+                            <select id="createKeyFilter" class="form-control">
+                                <option value="">Önce hesap seçin</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button id="createUserKeyBtn" class="btn btn--success">🔑 Yeni Anahtar Oluştur</button>
+                    <div id="createKeyResult" class="result-message hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 Admin Şifre Değiştir</h3>
+                <button class="modal-close" onclick="closeModal('changePasswordModal')">&times;</button>
+            </div>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label for="currentPassword">Mevcut Şifre</label>
+                    <input type="password" id="currentPassword" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Yeni Şifre</label>
+                    <input type="password" id="newPassword" class="form-control" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Yeni Şifre (Tekrar)</label>
+                    <input type="password" id="confirmPassword" class="form-control" minlength="6" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn--advanced" style="flex: 1;">🔐 Şifre Değiştir</button>
+                    <button type="button" class="btn btn--outline" style="flex: 1;" onclick="closeModal('changePasswordModal')">İptal</button>
+                </div>
+            </form>
+            <div id="changePasswordError" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div id="addAccountModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📧 Yeni Gmail Hesabı Ekle</h3>
+                <button class="modal-close" onclick="closeModal('addAccountModal')">&times;</button>
+            </div>
+            <form id="addAccountForm">
+                <div class="form-group">
+                    <label for="accountName">Hesap Adı</label>
+                    <input type="text" id="accountName" class="form-control" placeholder="Örn: Ana Gmail Hesabı" required>
+                </div>
+                <div class="form-group">
+                    <label for="accountEmail">Email Adresi</label>
+                    <input type="email" id="accountEmail" class="form-control" placeholder="example@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="credentialsFile">Credentials Dosyası</label>
+                    <input type="text" id="credentialsFile" class="form-control" placeholder="credentials_hesap1.json" required>
+                    <small style="color: var(--text-light);">Google Cloud Console'dan indirilen JSON dosyası</small>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn--multi" style="flex: 1;">📧 Hesap Ekle</button>
+                    <button type="button" class="btn btn--outline" style="flex: 1;" onclick="closeModal('addAccountModal')">İptal</button>
+                </div>
+            </form>
+            <div id="addAccountError" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Add Filter Modal -->
+    <div id="addFilterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔍 Yeni Email Filter Ekle</h3>
+                <button class="modal-close" onclick="closeModal('addFilterModal')">&times;</button>
+            </div>
+            <form id="addFilterForm">
+                <div class="form-group">
+                    <label for="filterAccount">Gmail Hesabı Seç</label>
+                    <select id="filterAccount" class="form-control" required>
+                        <option value="">Hesap seçin...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filterName">Filter Adı</label>
+                    <input type="text" id="filterName" class="form-control" placeholder="Örn: Netflix Kodları" required>
+                </div>
+                <div class="form-group">
+                    <label for="filterEmail">Email Adresi</label>
+                    <input type="email" id="filterEmail" class="form-control" placeholder="info@account.netflix.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="filterTriggers">Tetikleyici Kelimeler (virgülle ayırın)</label>
+                    <input type="text" id="filterTriggers" class="form-control" placeholder="Oturum açmak için aşağıdaki kodu girin" required>
+                </div>
+                <div class="form-group">
+                    <label for="filterPatterns">Kod Patterns (virgülle ayırın)</label>
+                    <input type="text" id="filterPatterns" class="form-control" placeholder="(?is)oturum\s*açmak.*?(\d{4}), (\d{4})" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn--advanced" style="flex: 1;">🔍 Filter Ekle</button>
+                    <button type="button" class="btn btn--outline" style="flex: 1;" onclick="closeModal('addFilterModal')">İptal</button>
+                </div>
+            </form>
+            <div id="addFilterError" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Multi Account System Frontend
+        const API_URL = 'http://localhost:5000';
+        let currentUser = null;
+        let autoCheckInterval = null;
+        let isAdminAuthenticated = false;
+        let gmailAccounts = [];
+        let emailFilters = [];
+
+        // DOM Elements
+        const elements = {
+            loadingScreen: document.getElementById('loadingScreen'),
+            loginScreen: document.getElementById('loginScreen'),
+            adminLoginScreen: document.getElementById('adminLoginScreen'),
+            userPanel: document.getElementById('userPanel'),
+            adminPanel: document.getElementById('adminPanel'),
+            loginForm: document.getElementById('loginForm'),
+            adminLoginForm: document.getElementById('adminLoginForm'),
+            changePasswordForm: document.getElementById('changePasswordForm'),
+            addAccountForm: document.getElementById('addAccountForm'),
+            addFilterForm: document.getElementById('addFilterForm'),
+            loginError: document.getElementById('loginError'),
+            adminLoginError: document.getElementById('adminLoginError'),
+            changePasswordError: document.getElementById('changePasswordError'),
+            addAccountError: document.getElementById('addAccountError'),
+            addFilterError: document.getElementById('addFilterError'),
+            userKey: document.getElementById('userKey'),
+            adminPassword: document.getElementById('adminPassword'),
+            currentUserKey: document.getElementById('currentUserKey'),
+            currentUserAccount: document.getElementById('currentUserAccount'),
+            currentUserFilter: document.getElementById('currentUserFilter'),
+            userCode: document.getElementById('userCode'),
+            createKeyResult: document.getElementById('createKeyResult'),
+            accountsList: document.getElementById('accountsList'),
+            filtersList: document.getElementById('filtersList'),
+            usersList: document.getElementById('usersList'),
+            totalUsers: document.getElementById('totalUsers'),
+            usersWithCode: document.getElementById('usersWithCode'),
+            usersWaiting: document.getElementById('usersWaiting'),
+            totalAccounts: document.getElementById('totalAccounts'),
+            connectedAccounts: document.getElementById('connectedAccounts'),
+            totalFilters: document.getElementById('totalFilters'),
+            scanningStatus: document.getElementById('scanningStatus'),
+            createKeyAccount: document.getElementById('createKeyAccount'),
+            createKeyFilter: document.getElementById('createKeyFilter'),
+            filterAccount: document.getElementById('filterAccount')
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Multi Account System başlatılıyor...');
+            setupEventListeners();
+            await startApp();
+        });
+
+        function setupEventListeners() {
+            elements.loginForm.addEventListener('submit', handleLogin);
+            elements.adminLoginForm.addEventListener('submit', handleAdminLogin);
+            elements.changePasswordForm.addEventListener('submit', handleChangePassword);
+            elements.addAccountForm.addEventListener('submit', handleAddAccount);
+            elements.addFilterForm.addEventListener('submit', handleAddFilter);
+            
+            document.getElementById('userLogout')?.addEventListener('click', handleLogout);
+            document.getElementById('adminLogout')?.addEventListener('click', handleAdminLogout);
+            document.getElementById('checkCodeBtn')?.addEventListener('click', handleCheckCode);
+            document.getElementById('createUserKeyBtn')?.addEventListener('click', handleCreateUserKey);
+            document.getElementById('adminStartScanBtn')?.addEventListener('click', handleStartScanning);
+            document.getElementById('adminStopScanBtn')?.addEventListener('click', handleStopScanning);
+            document.getElementById('connectAllAccountsBtn')?.addEventListener('click', handleConnectAllAccounts);
+            
+            document.getElementById('changePasswordBtn')?.addEventListener('click', () => {
+                showModal('changePasswordModal');
+            });
+            document.getElementById('addAccountBtn')?.addEventListener('click', () => {
+                showModal('addAccountModal');
+            });
+            document.getElementById('addFilterBtn')?.addEventListener('click', async () => {
+                await loadAccountsForFilter();
+                showModal('addFilterModal');
+            });
+            document.getElementById('gmailSetupBtn')?.addEventListener('click', () => {
+                window.open('/setup_gmail', '_blank');
+            });
+
+            // Account selection change
+            document.getElementById('createKeyAccount')?.addEventListener('change', handleAccountSelectionChange);
+        }
+
+        async function startApp() {
+            await sleep(1000);
+            
+            // Admin oturum kontrolü
+            try {
+                const authCheck = await apiRequest('/api/admin/check_auth', 'GET');
+                if (authCheck.authenticated) {
+                    isAdminAuthenticated = true;
+                    await loadGmailAccounts();
+                    await loadEmailFilters();
+                    await showAdminPanel();
+                    return;
+                }
+            } catch (error) {
+                console.log('Admin oturum kontrolü:', error.message);
+            }
+            
+            // Normal kullanıcı oturum kontrolü
+            const savedKey = localStorage.getItem('multi_account_key');
+            if (savedKey && savedKey !== 'admin') {
+                try {
+                    const result = await apiRequest('/api/auth', 'POST', { key: savedKey.toLowerCase() });
+                    currentUser = { key: savedKey.toLowerCase(), ...result };
+                    await showUserPanel();
+                    startAutoCodeCheck();
+                    return;
+                } catch (error) {
+                    localStorage.removeItem('multi_account_key');
+                }
+            }
+            
+            showScreen('loginScreen');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const keyInput = elements.userKey.value.trim();
+            
+            // Admin girişi kontrolü
+            if (keyInput.toLowerCase() === 'admin') {
+                showScreen('adminLoginScreen');
+                elements.adminPassword.focus();
+                return;
+            }
+            
+            // Normal kullanıcı girişi
+            const key = keyInput.toLowerCase();
+            
+            const submitBtn = e.target.querySelector('button');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '⏳ Giriş yapılıyor...';
+            submitBtn.disabled = true;
+            elements.loginError.classList.add('hidden');
+
+            try {
+                const result = await apiRequest('/api/auth', 'POST', { key });
+                currentUser = { key, ...result };
+                localStorage.setItem('multi_account_key', key);
+                await showUserPanel();
+                startAutoCodeCheck();
+            } catch (error) {
+                elements.loginError.textContent = error.message;
+                elements.loginError.classList.remove('hidden');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            
+            const password = elements.adminPassword.value;
+            
+            const submitBtn = e.target.querySelector('button');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '⏳ Doğrulanıyor...';
+            submitBtn.disabled = true;
+            elements.adminLoginError.classList.add('hidden');
+
+            try {
+                const result = await apiRequest('/api/admin/login', 'POST', { password });
+                isAdminAuthenticated = true;
+                await loadGmailAccounts();
+                await loadEmailFilters();
+                await showAdminPanel();
+                showNotification('🚀 Multi Account admin girişi başarılı', 'success');
+            } catch (error) {
+                elements.adminLoginError.textContent = error.message;
+                elements.adminLoginError.classList.remove('hidden');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            elements.changePasswordError.classList.add('hidden');
+            
+            if (newPassword !== confirmPassword) {
+                elements.changePasswordError.textContent = 'Yeni şifreler eşleşmiyor!';
+                elements.changePasswordError.classList.remove('hidden');
+                return;
+            }
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '🔐 Değiştiriliyor...';
+            submitBtn.disabled = true;
+
+            try {
+                const result = await apiRequest('/api/admin/change_password', 'POST', {
+                    current_password: currentPassword,
+                    new_password: newPassword
+                });
+                
+                showNotification('🔐 Admin şifresi başarıyla değiştirildi', 'success');
+                closeModal('changePasswordModal');
+                elements.changePasswordForm.reset();
+            } catch (error) {
+                elements.changePasswordError.textContent = error.message;
+                elements.changePasswordError.classList.remove('hidden');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handleAddAccount(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('accountName').value.trim();
+            const email = document.getElementById('accountEmail').value.trim();
+            const credentialsFile = document.getElementById('credentialsFile').value.trim();
+            
+            elements.addAccountError.classList.add('hidden');
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '📧 Ekleniyor...';
+            submitBtn.disabled = true;
+
+            try {
+                const result = await apiRequest('/api/admin/gmail_accounts', 'POST', {
+                    name,
+                    email,
+                    credentials_file: credentialsFile,
+                    active: true
+                });
+                
+                showNotification('📧 Gmail hesabı başarıyla eklendi', 'success');
+                closeModal('addAccountModal');
+                elements.addAccountForm.reset();
+                
+                await loadGmailAccounts();
+                await updateAdminStats();
+            } catch (error) {
+                elements.addAccountError.textContent = error.message;
+                elements.addAccountError.classList.remove('hidden');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handleAddFilter(e) {
+            e.preventDefault();
+            
+            const accountId = document.getElementById('filterAccount').value;
+            const name = document.getElementById('filterName').value.trim();
+            const fromEmail = document.getElementById('filterEmail').value.trim();
+            const triggersText = document.getElementById('filterTriggers').value.trim();
+            const patternsText = document.getElementById('filterPatterns').value.trim();
+            
+            const triggers = triggersText.split(',').map(t => t.trim()).filter(t => t);
+            const patterns = patternsText.split(',').map(p => p.trim()).filter(p => p);
+            
+            elements.addFilterError.classList.add('hidden');
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '🔍 Ekleniyor...';
+            submitBtn.disabled = true;
+
+            try {
+                const result = await apiRequest('/api/admin/email_filters', 'POST', {
+                    account_id: accountId,
+                    name,
+                    from_email: fromEmail,
+                    trigger_phrases: triggers,
+                    code_patterns: patterns,
+                    active: true
+                });
+                
+                showNotification('🔍 Email filter başarıyla eklendi', 'success');
+                closeModal('addFilterModal');
+                elements.addFilterForm.reset();
+                
+                await loadEmailFilters();
+                await updateAdminStats();
+            } catch (error) {
+                elements.addFilterError.textContent = error.message;
+                elements.addFilterError.classList.remove('hidden');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('multi_account_key');
+            currentUser = null;
+            elements.userKey.value = '';
+            stopAutoCodeCheck();
+            showScreen('loginScreen');
+        }
+
+        async function handleAdminLogout() {
+            try {
+                await apiRequest('/api/admin/logout', 'POST');
+                isAdminAuthenticated = false;
+                elements.adminPassword.value = '';
+                gmailAccounts = [];
+                emailFilters = [];
+                showScreen('loginScreen');
+                showNotification('🚀 Multi account çıkışı tamamlandı', 'success');
+            } catch (error) {
+                console.log('Admin logout error:', error);
+            }
+        }
+
+        async function loadGmailAccounts() {
+            try {
+                const result = await apiRequest('/api/admin/gmail_accounts', 'GET');
+                gmailAccounts = result.accounts || [];
+                updateAccountsList();
+                updateCreateKeyAccountOptions();
+            } catch (error) {
+                console.log('Gmail accounts yükleme hatası:', error);
+            }
+        }
+
+        async function loadEmailFilters() {
+            try {
+                const result = await apiRequest('/api/admin/email_filters', 'GET');
+                emailFilters = result.filters || [];
+                updateFiltersList();
+            } catch (error) {
+                console.log('Email filters yükleme hatası:', error);
+            }
+        }
+
+        async function loadAccountsForFilter() {
+            await loadGmailAccounts();
+            elements.filterAccount.innerHTML = '';
+            
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Hesap seçin...';
+            elements.filterAccount.appendChild(defaultOption);
+            
+            gmailAccounts.forEach(account => {
+                const option = document.createElement('option');
+                option.value = account.id;
+                option.textContent = `${account.name} (${account.email})`;
+                elements.filterAccount.appendChild(option);
+            });
+        }
+
+        function updateCreateKeyAccountOptions() {
+            elements.createKeyAccount.innerHTML = '';
+            
+            if (gmailAccounts.length === 0) {
+                elements.createKeyAccount.innerHTML = '<option value="">Aktif hesap bulunamadı</option>';
+                return;
+            }
+            
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Hesap seçin...';
+            elements.createKeyAccount.appendChild(defaultOption);
+            
+            gmailAccounts.forEach(account => {
+                const option = document.createElement('option');
+                option.value = account.id;
+                option.textContent = `${account.name} (${account.email})`;
+                elements.createKeyAccount.appendChild(option);
+            });
+        }
+
+        function handleAccountSelectionChange() {
+            const selectedAccountId = elements.createKeyAccount.value;
+            elements.createKeyFilter.innerHTML = '';
+            
+            if (!selectedAccountId) {
+                elements.createKeyFilter.innerHTML = '<option value="">Önce hesap seçin</option>';
+                return;
+            }
+            
+            const accountFilters = emailFilters.filter(filter => filter.account_id === selectedAccountId);
+            
+            if (accountFilters.length === 0) {
+                elements.createKeyFilter.innerHTML = '<option value="">Bu hesap için filter yok</option>';
+                return;
+            }
+            
+            accountFilters.forEach(filter => {
+                const option = document.createElement('option');
+                option.value = filter.id;
+                option.textContent = `${filter.name} (${filter.from_email})`;
+                elements.createKeyFilter.appendChild(option);
+            });
+        }
+
+        function updateAccountsList() {
+            if (gmailAccounts.length === 0) {
+                elements.accountsList.innerHTML = '<p style="text-align: center; color: var(--text-light);">Henüz Gmail hesabı yok</p>';
+                return;
+            }
+            
+            elements.accountsList.innerHTML = gmailAccounts.map(account => `
+                <div class="account-card ${account.connected ? 'connected' : 'disconnected'}">
+                    <div class="account-header">
+                        <div class="account-title">${account.name}</div>
+                        <div class="account-actions">
+                            <span class="status-badge ${account.connected ? 'success' : 'error'}">
+                                ${account.connected ? '🟢 Bağlı' : '🔴 Bağlı Değil'}
+                            </span>
+                            <button class="btn btn--small btn--multi" onclick="connectAccount('${account.id}')">
+                                ${account.connected ? '🔄 Yenile' : '🔗 Bağla'}
+                            </button>
+                            <button class="btn btn--small btn--warning" onclick="editAccount('${account.id}')">✏️</button>
+                            <button class="btn btn--small btn--error" onclick="deleteAccount('${account.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="account-details">
+                        <div><strong>Email:</strong> ${account.email}</div>
+                        <div><strong>Credentials:</strong> ${account.credentials_file || 'credentials.json'}</div>
+                        <div><strong>ID:</strong> ${account.id}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateFiltersList() {
+            if (emailFilters.length === 0) {
+                elements.filtersList.innerHTML = '<p style="text-align: center; color: var(--text-light);">Henüz email filter yok</p>';
+                return;
+            }
+            
+            elements.filtersList.innerHTML = emailFilters.map(filter => {
+                const account = gmailAccounts.find(acc => acc.id === filter.account_id);
+                const accountName = account ? account.name : filter.account_id;
+                
+                return `
+                <div class="filter-card ${filter.active ? 'active' : 'inactive'}">
+                    <div class="filter-header">
+                        <div class="filter-title">${filter.name}</div>
+                        <div class="filter-actions">
+                            <span class="status-badge ${filter.active ? 'active' : 'inactive'}">
+                                ${filter.active ? '✅ Aktif' : '⏸️ Pasif'}
+                            </span>
+                            <button class="btn btn--small btn--warning" onclick="toggleFilter('${filter.id}', ${!filter.active})">
+                                ${filter.active ? '⏸️' : '▶️'}
+                            </button>
+                            <button class="btn btn--small btn--error" onclick="deleteFilter('${filter.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-light);">
+                        <div><strong>Hesap:</strong> ${accountName}</div>
+                        <div><strong>Email:</strong> ${filter.from_email}</div>
+                        <div><strong>Tetikleyiciler:</strong> ${filter.trigger_phrases.join(', ')}</div>
+                        <div><strong>Patterns:</strong> ${filter.code_patterns.slice(0, 2).join(', ')}${filter.code_patterns.length > 2 ? '...' : ''}</div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function connectAccount(accountId) {
+            try {
+                const result = await apiRequest(`/api/admin/gmail_accounts/${accountId}/connect`, 'POST');
+                showNotification('📧 Gmail hesabı bağlandı', 'success');
+                await loadGmailAccounts();
+                await updateAdminStats();
+            } catch (error) {
+                showNotification('Hesap bağlantı hatası: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteAccount(accountId) {
+            if (!confirm('Bu Gmail hesabını silmek istediğinizden emin misiniz? İlgili tüm filterler de silinecek.')) {
+                return;
+            }
+            
+            try {
+                await apiRequest(`/api/admin/gmail_accounts/${accountId}`, 'DELETE');
+                await loadGmailAccounts();
+                await loadEmailFilters();
+                await updateAdminStats();
+                showNotification('Gmail hesabı silindi', 'success');
+            } catch (error) {
+                showNotification('Hesap silme hatası: ' + error.message, 'error');
+            }
+        }
+
+        async function toggleFilter(filterId, active) {
+            try {
+                await apiRequest(`/api/admin/email_filters/${filterId}`, 'PUT', { active });
+                await loadEmailFilters();
+                showNotification(`Filter ${active ? 'aktifleştirildi' : 'durduruldu'}`, 'success');
+            } catch (error) {
+                showNotification('Filter güncelleme hatası: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteFilter(filterId) {
+            if (!confirm('Bu email filter\'ı silmek istediğinizden emin misiniz?')) {
+                return;
+            }
+            
+            try {
+                await apiRequest(`/api/admin/email_filters/${filterId}`, 'DELETE');
+                await loadEmailFilters();
+                await updateAdminStats();
+                showNotification('Email filter silindi', 'success');
+            } catch (error) {
+                showNotification('Filter silme hatası: ' + error.message, 'error');
+            }
+        }
+
+        async function handleConnectAllAccounts() {
+            const btn = document.getElementById('connectAllAccountsBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '📧 Bağlanıyor...';
+            btn.disabled = true;
+
+            try {
+                const result = await apiRequest('/api/admin/connect_all_accounts', 'POST');
+                showNotification('📧 ' + result.message, 'success');
+                await loadGmailAccounts();
+                await updateAdminStats();
+            } catch (error) {
+                showNotification('❌ ' + error.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function showUserPanel() {
+            elements.currentUserKey.textContent = currentUser.key.toUpperCase();
+            elements.currentUserAccount.textContent = currentUser.account_email || 'N/A';
+            elements.currentUserFilter.textContent = currentUser.filter_name || 'N/A';
+            updateUserDisplay();
+            showScreen('userPanel');
+        }
+
+        async function showAdminPanel() {
+            await updateAdminStats();
+            showScreen('adminPanel');
+        }
+
+        function updateUserDisplay() {
+            if (!currentUser) return;
+
+            if (currentUser.has_received_code && currentUser.last_code_received) {
+                elements.userCode.innerHTML = `
+                    <div class="code-display">
+                        <div class="code-value">${currentUser.last_code_received}</div>
+                        <div>🚀 Multi Account sistem</div>
+                        <small>Gmail: ${currentUser.account_email || 'N/A'} • Filter: ${currentUser.filter_name || 'N/A'}</small>
+                    </div>
+                `;
+            } else {
+                elements.userCode.innerHTML = `
+                    <div class="waiting-code">
+                        <div class="waiting-icon">🚀</div>
+                        <h3>Multi Account sistem taranıyor...</h3>
+                        <p>Gmail: ${currentUser.account_email || 'N/A'} • Filter: ${currentUser.filter_name || 'N/A'}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function handleCheckCode() {
+            const btn = document.getElementById('checkCodeBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '🚀 Multi account kontrol...';
+            btn.disabled = true;
+
+            try {
+                const result = await apiRequest('/api/get_my_code', 'POST', { key: currentUser.key });
+                
+                if (result.code) {
+                    currentUser.has_received_code = true;
+                    currentUser.last_code_received = result.code;
+                    updateUserDisplay();
+                    showNotification('🚀 Multi account yeni kod: ' + result.code, 'success');
+                } else {
+                    showNotification('🚀 ' + (result.message || 'Henüz yeni kod yok'), 'info');
+                }
+            } catch (error) {
+                showNotification('❌ ' + error.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleCreateUserKey() {
+            const selectedAccountId = elements.createKeyAccount.value;
+            const selectedFilterId = elements.createKeyFilter.value;
+            
+            if (!selectedAccountId || !selectedFilterId) {
+                showNotification('Lütfen hesap ve filter seçin', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('createUserKeyBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '🚀 Oluşturuluyor...';
+            btn.disabled = true;
+            elements.createKeyResult.classList.add('hidden');
+
+            try {
+                const result = await apiRequest('/api/admin/create_key', 'POST', {
+                    account_id: selectedAccountId,
+                    filter_id: selectedFilterId
+                });
+                
+                const accountName = gmailAccounts.find(a => a.id === selectedAccountId)?.name || selectedAccountId;
+                const filterName = emailFilters.find(f => f.id === selectedFilterId)?.name || selectedFilterId;
+                
+                elements.createKeyResult.innerHTML = `
+                    <h4>🚀 Multi Account Anahtar Oluşturuldu!</h4>
+                    <div class="generated-key">${result.user_key}</div>
+                    <p><strong>Gmail Hesabı:</strong> ${accountName}</p>
+                    <p><strong>Email Filter:</strong> ${filterName}</p>
+                    <p>Bu anahtar sadece seçilen hesap + filter kombinasyonu için kod alabilir.</p>
+                `;
+                elements.createKeyResult.className = 'result-message success';
+                elements.createKeyResult.classList.remove('hidden');
+                
+                await updateAdminStats();
+                showNotification(result.message, 'success');
+            } catch (error) {
+                elements.createKeyResult.textContent = 'Hata: ' + error.message;
+                elements.createKeyResult.className = 'result-message error';
+                elements.createKeyResult.classList.remove('hidden');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleStartScanning() {
+            const btn = document.getElementById('adminStartScanBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '🚀 Başlatılıyor...';
+            btn.disabled = true;
+
+            try {
+                const result = await apiRequest('/api/admin/start_scanning', 'POST');
+                showNotification('🚀 ' + result.message, 'success');
+                await updateAdminStats();
+            } catch (error) {
+                showNotification('❌ ' + error.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleStopScanning() {
+            const btn = document.getElementById('adminStopScanBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '⏸️ Durduruluyor...';
+            btn.disabled = true;
+
+            try {
+                const result = await apiRequest('/api/admin/stop_scanning', 'POST');
+                showNotification('⏸️ ' + result.message, 'success');
+                await updateAdminStats();
+            } catch (error) {
+                showNotification('❌ ' + error.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function updateAdminStats() {
+            try {
+                const stats = await apiRequest('/api/admin/stats', 'GET');
+                
+                elements.totalUsers.textContent = stats.total_users;
+                elements.usersWithCode.textContent = stats.users_with_code;
+                elements.usersWaiting.textContent = stats.users_waiting;
+                elements.totalAccounts.textContent = stats.total_accounts;
+                elements.connectedAccounts.textContent = stats.connected_accounts;
+                elements.totalFilters.textContent = stats.email_filters.length;
+                elements.scanningStatus.textContent = stats.scanning_active ? '🔄 Aktif' : '⏸️ Pasif';
+
+                // Users list
+                if (stats.all_users.length === 0) {
+                    elements.usersList.innerHTML = '<p style="text-align: center; color: var(--text-light);">Henüz kullanıcı yok</p>';
+                } else {
+                    elements.usersList.innerHTML = stats.all_users.map(user => `
+                        <div class="user-card ${user.has_code ? 'has-code' : ''}">
+                            <div>
+                                <div class="user-key">${user.key.toUpperCase()}</div>
+                                <div class="user-details">
+                                    📅 ${new Date(user.created_date).toLocaleDateString('tr-TR')}
+                                    • 📧 ${user.account_id}
+                                    • 🔍 ${user.filter_id}
+                                    ${user.code ? ` • 💎 ${user.code}` : ''}
+                                </div>
+                            </div>
+                            <div class="status-badge ${user.has_code ? 'success' : 'warning'}">
+                                ${user.has_code ? '✅ Kod Alındı' : '⏳ Bekliyor'}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Stats error:', error);
+            }
+        }
+
+        function startAutoCodeCheck() {
+            if (currentUser?.has_received_code) return;
+            
+            autoCheckInterval = setInterval(async () => {
+                if (!currentUser || currentUser.has_received_code) {
+                    clearInterval(autoCheckInterval);
+                    return;
+                }
+                
+                try {
+                    const result = await apiRequest('/api/get_my_code', 'POST', { key: currentUser.key });
+                    if (result.code && !result.already_received) {
+                        currentUser.has_received_code = true;
+                        currentUser.last_code_received = result.code;
+                        updateUserDisplay();
+                        showNotification('🚀 Multi account yeni kod: ' + result.code, 'success');
+                        clearInterval(autoCheckInterval);
+                    }
+                } catch (error) {
+                    console.log('Auto check error:', error);
+                }
+            }, 12000);
+        }
+
+        function stopAutoCodeCheck() {
+            if (autoCheckInterval) {
+                clearInterval(autoCheckInterval);
+                autoCheckInterval = null;
+            }
+        }
+
+        function switchTab(tabName) {
+            // Tab'ları değiştir
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            
+            // Form'ları temizle
+            const modal = document.getElementById(modalId);
+            const forms = modal.querySelectorAll('form');
+            forms.forEach(form => form.reset());
+            
+            // Hata mesajlarını gizle
+            const errors = modal.querySelectorAll('.error-message');
+            errors.forEach(error => error.classList.add('hidden'));
+        }
+
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const config = { 
+                method, 
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            };
+            if (data) config.body = JSON.stringify(data);
+
+            const response = await fetch(API_URL + endpoint, config);
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'API Hatası');
+            }
+
+            return result;
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                info: '#7c3aed'
+            };
+
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${colors[type]};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 400px;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 6000);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        console.log('✅ Multi Account System frontend yüklendi');
+        console.log('🚀 Çoklu Gmail hesabı + filter sistemi aktif');
+    </script>
+</body>
+</html>
